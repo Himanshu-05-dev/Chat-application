@@ -6,7 +6,7 @@ const connectDB = require('./config/db');
 const { Server } = require('socket.io');
 
 // Connect to the database
-await connectDB();
+connectDB();
 
 const app = express();
 
@@ -20,8 +20,10 @@ const io = new Server(server, {
 
 const UserSocketMap = {};
 
-// Export io and UserSocketMap early to avoid circular dependency issues when routers/controllers are required
-module.exports = { io, UserSocketMap };
+// Export server along with socket properties early to resolve circular dependencies and support Vercel deployments
+module.exports = server;
+module.exports.io = io;
+module.exports.UserSocketMap = UserSocketMap;
 
 const userRouter = require('./Routes/User.Route');
 const messageRouter = require('./Routes/Message.Route');
@@ -62,5 +64,5 @@ if(process.env.NODE_ENV !== "production"){
     });
 }
 
-//export server for vercel
-export default server;
+// Export server for vercel (CommonJS)
+module.exports = server;
